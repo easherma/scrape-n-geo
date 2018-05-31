@@ -71,10 +71,12 @@ ITEM_PIPELINES = {
    'scrape_n_geo.pipelines.DefaultValuesPipeline': 320,
    'scrape_n_geo.pipelines.AddressPipeline': 350,
    'scrape_n_geo.pipelines.GeocoderPipeline': 400,
-    'scrape_n_geo.pipelines.AttributesPipeline': 450,
+   'scrape_n_geo.pipelines.AttributesPipeline': 450,
    'scrape_n_geo.pipelines.CsvWriterPipeline': 500,
    'scrape_n_geo.pipelines.JsonWriterPipeline': 500
 }
+
+LOG_LEVEL = 'ERROR'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html

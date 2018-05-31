@@ -9,6 +9,12 @@ import scrapy
 import datetime
 from scrapy.loader import ItemLoader
 from scrapy.loader.processors import TakeFirst, MapCompose, Join
+import json
+
+
+
+
+
 
 
 class CompletedSalesItem(scrapy.Item):
@@ -20,7 +26,7 @@ class CompletedSalesItem(scrapy.Item):
     firm_name = scrapy.Field()
     address = scrapy.Field()
     address_components = scrapy.Field()
-    geocode_result = scrapy.Field(serializer=str)
+    geocode_result = scrapy.Field()
     geocoded_address = scrapy.Field()
     # lat = scrapy.Field()
     # lng = scrapy.Field()
@@ -33,6 +39,10 @@ class CompletedSalesItem(scrapy.Item):
     sale_amount = scrapy.Field()
     continuance = scrapy.Field()
     sold_to = scrapy.Field()
+    zoning = scrapy.Field()
+    county_attributes = scrapy.Field()
+    county_class = scrapy.Field()
+    estimated_units = scrapy.Field()
     zoning_query = scrapy.Field()
     county_query = scrapy.Field()
     last_updated = scrapy.Field(serializer=str)

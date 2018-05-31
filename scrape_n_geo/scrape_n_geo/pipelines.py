@@ -6,6 +6,8 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 import json
+import pandas as pd
+import csv
 from scrapy.exporters import JsonItemExporter, CsvItemExporter
 from scrapy.exceptions import DropItem
 from datetime import datetime
@@ -60,11 +62,11 @@ class FilterPipeline(object):
             if item['city'] == "CHICAGO" and item['sale_amount'] != "$0.00" and item['continuance'] == "":
                 return item
             else:
-                print("city: ", item['city'], item['city'] == "CHICAGO")
-                print("sale amount: ",
-                      item['sale_amount'], item['sale_amount'] != "$0.00")
-                print("continuance", item['continuance'],
-                      item['continuance'] == "")
+                # print("city: ", item['city'], item['city'] == "CHICAGO")
+                # print("sale amount: ",
+                #       item['sale_amount'], item['sale_amount'] != "$0.00")
+                # print("continuance", item['continuance'],
+                #       item['continuance'] == "")
                 raise DropItem(
                     "Filtering element since it dosen't match criteria")
         else:
@@ -223,33 +225,118 @@ class GeocoderPipeline(object):
             print("quality error", e)
             raise
 
+
 class AttributesPipeline(object):
 
     #make api links
-    def create_api_links(latlng):
+    def create_api_links(self, latlng):
         zoning_endpoint = "https://data.cityofchicago.org/resource/dj47-wfun.geojson?$where=intersects(the_geom,'"
         county_endpoint = "https://gis1.cookcountyil.gov/arcgis/rest/services/cookVwrDynmc/MapServer/44/query?where=&text=&objectIds=&time=&geometry=POINT("
         county_params = "&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=BLDGClass,Pin14,TotalValue&returnGeometry=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&f=pjson"
+        zoning_query = ""
+        county_query = ""
         try:
-            item['zoning_query'] = zoning_endpoint + latlng.wkt + "')"
-        #     county_query = county_endpoint + latlng.wkt + ")" + county_params
-            item['county_query'] = county_endpoint + str(latlng.lng) + "," + str(latlng.lat) +")" + county_params
+            # import pdb; pdb.set_trace()
+            zoning_query = zoning_endpoint + latlng.wkt + "')"
+            county_query = county_endpoint + \
+                str(latlng.lng) + "," + str(latlng.lat) + ")" + county_params
+        #     item['zoning_query'] = zoning_endpoint + latlng.wkt + "')"
+        # #     county_query = county_endpoint + latlng.wkt + ")" + county_params
+        #     item['county_query'] = county_endpoint + str(latlng.lng) + "," + str(latlng.lat) +")" + county_params
         except:
             print("link creation error")
             pass
-        return zoning_query, county_query
+        finally:
+            return zoning_query, county_query
 
+    #get county
+    def get_county(self, url):
+        BLDGClass = None
+        PIN14 = None
+        TotalValue = None
+        attributes = None
+        try:
+            r = requests.get(url)
+            result = r.json()
+            BLDGClass = result['features'][0]['attributes']['BLDGClass']
+            PIN14 = result['features'][0]['attributes']['PIN14']
+            TotalValue = result['features'][0]['attributes']['TotalValue']
+            attributes = result['features'][0]['attributes']
+        except Exception as e:
+            print(e)
+            attributes = None
+            pass
+
+        return attributes, BLDGClass
+
+    def get_zoning(self, url):
+        # make request using parsed url w/ params
+        zone_class = None
+        try:
+            r = requests.get(url)
+            json = r.json()
+            zone_class = json['features'][0]['properties']['zone_class']
+        except Exception as e:
+            print(e)
+            zone_class = None
+            pass
+
+        return zone_class
+
+    def estimate_units(self, code):
+
+        try:
+            code = int(code)
+        except:
+            pass
+        units_lookup = pd.read_csv('./lookup.csv')
+        # csv_file = csv.DictReader(open('./lookup.csv', 'r'), delimiter=',')
+        # for row in csv_file:
+        #     print(row)
+        try:
+            # import pdb; pdb.set_trace()
+            building_code = units_lookup[units_lookup['BLDGClass'] == code]
+            u_min = int(building_code['min_units'])
+            u_max = int(building_code['max_units'])
+            if (u_min < u_max):
+                return u_max
+            else:
+                return u_min
+        except Exception as e:
+            print("no code", e)
+            return 0
 
     def process_item(self, item, spider):
+        # import pdb; pdb.set_trace()
         if item:
             try:
                 api_links = self.create_api_links(item["geocode_result"])
+                zoning_values = self.get_zoning(api_links[0])
+            except Exception as e:
+                logging.error.exception(e)
+                logging.error(
+                    "Error getting zoning attributes with {}".format(item["geocode_result"]))
+            try:
+                county_values = self.get_county(api_links[1])
             except Exception as e:
                 logging.error(e)
-                logging.error("Error making api_url  with {}".format(item["geocode_result"]))
+                logging.error(
+                    "Error getting county attributes with {}".format(item["geocode_result"]))
+            if zoning_values:
+                item["zoning"] = zoning_values
 
+            if county_values:
+                item["county_attributes"] = county_values[0]
+                item["county_class"] = county_values[1]
+                item['estimated_units'] = self.estimate_units(county_values[1])
+
+            item['zoning_query'] = api_links[0]
+            item['county_query'] = api_links[1]
+            item["geocode_result"] = item["geocode_result"].json
+            return item
         else:
             raise
+
 
 class JsonWriterPipeline(object):
 
@@ -273,29 +360,30 @@ class CsvWriterPipeline(object):
     def __init__(self):
         self.file = open(generate_file_name('csv'), 'wb')
         self.exporter = CsvItemExporter(self.file, encoding='utf-8')
-        self.exporter.fields_to_export = [
-                    'sale_date',
-                    'sale_time',
-                    'file_number',
-                    'case_number',
-                    'opening_bid',
-                    'required_down',
-                    'sale_amount',
-                    'continuance',
-                    'sold_to',
-                    'firm_name',
-                    'address',
-                    'city',
-                    'county',
-                    'zip_code',
-                    'address_components',
-                    # 'lat',
-                    # 'lng',
-                    'last_updated',
-                    'geocode_result',
-                    'geocoded_address'
-                    'geocode_url'
-                    ]
+        # self.exporter.fields_to_export = [
+        #             'sale_date',
+        #             'sale_time',
+        #             'file_number',
+        #             'case_number',
+        #             'opening_bid',
+        #             'required_down',
+        #             'sale_amount',
+        #             'continuance',
+        #             'sold_to',
+        #             'firm_name',
+        #             'address',
+        #             'city',
+        #             'county',
+        #             'zip_code',
+        #             'address_components',
+        #             # 'lat',
+        #             # 'lng',
+        #             'last_updated',
+        #             'geocode_result',
+        #             'geocoded_address',
+        #             'geocode_url'
+        #             ]
+        # import pdb; pdb.set_trace()
         self.exporter.start_exporting()
 
     def close_spider(self, spider):
