@@ -15,6 +15,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import time
+import logging
 
 
 def generate_file_name(file_format):
@@ -148,26 +149,6 @@ class GeocoderPipeline(object):
         session.mount('https://', adapter)
         return session
 
-    def process_item(self, item, spider):
-
-        try:
-            geocode_result = self.get_geocoder_query(
-                item['address_components'], provider='mapbox' )
-            if geocode_result.quality <= 0.7:
-                print("inital quality too low: ",
-                      geocode_result.quality, "switching provider")
-                geocode_result = self.get_geocoder_query(
-                    item['address_components'],  provider='google')
-            item["geocode_result"] = geocode_result.json
-            item["geocoded_address"] = geocode_result.address
-            item['geocode_url'] = geocode_result.url
-            print("geocoded: ", item['geocode_url'])
-            return item
-        except Exception as e:
-            print("quality error", e)
-            raise
-
-
     def get_geocoder_query(self, address=None, bbox=None, key=None, provider=None, *args, **kwargs):
 
         try:
@@ -223,6 +204,52 @@ class GeocoderPipeline(object):
 
         return geocode_result
 
+    def process_item(self, item, spider):
+
+        try:
+            geocode_result = self.get_geocoder_query(
+                item['address_components'], provider='mapbox')
+            if geocode_result.quality <= 0.7:
+                print("inital quality too low: ",
+                      geocode_result.quality, "switching provider")
+                geocode_result = self.get_geocoder_query(
+                    item['address_components'],  provider='google')
+            item["geocode_result"] = geocode_result
+            item["geocoded_address"] = geocode_result.address
+            item['geocode_url'] = geocode_result.url
+            print("geocoded: ", item['geocode_url'])
+            return item
+        except Exception as e:
+            print("quality error", e)
+            raise
+
+class AttributesPipeline(object):
+
+    #make api links
+    def create_api_links(latlng):
+        zoning_endpoint = "https://data.cityofchicago.org/resource/dj47-wfun.geojson?$where=intersects(the_geom,'"
+        county_endpoint = "https://gis1.cookcountyil.gov/arcgis/rest/services/cookVwrDynmc/MapServer/44/query?where=&text=&objectIds=&time=&geometry=POINT("
+        county_params = "&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=BLDGClass,Pin14,TotalValue&returnGeometry=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&f=pjson"
+        try:
+            item['zoning_query'] = zoning_endpoint + latlng.wkt + "')"
+        #     county_query = county_endpoint + latlng.wkt + ")" + county_params
+            item['county_query'] = county_endpoint + str(latlng.lng) + "," + str(latlng.lat) +")" + county_params
+        except:
+            print("link creation error")
+            pass
+        return zoning_query, county_query
+
+
+    def process_item(self, item, spider):
+        if item:
+            try:
+                api_links = self.create_api_links(item["geocode_result"])
+            except Exception as e:
+                logging.error(e)
+                logging.error("Error making api_url  with {}".format(item["geocode_result"]))
+
+        else:
+            raise
 
 class JsonWriterPipeline(object):
 
