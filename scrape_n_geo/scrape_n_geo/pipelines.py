@@ -20,10 +20,10 @@ import time
 import logging
 
 
-def generate_file_name(file_format):
+def generate_file_name(file_format, custom_name):
     timestamp = datetime.now().strftime('%Y%m%d_%H%M')
     file_name = './local_outputs/{}_{}.{}'.format(
-        'output', timestamp, file_format)
+        custom_name, timestamp, file_format)
     return file_name
 
 
@@ -240,9 +240,7 @@ class AttributesPipeline(object):
             zoning_query = zoning_endpoint + latlng.wkt + "')"
             county_query = county_endpoint + \
                 str(latlng.lng) + "," + str(latlng.lat) + ")" + county_params
-        #     item['zoning_query'] = zoning_endpoint + latlng.wkt + "')"
-        # #     county_query = county_endpoint + latlng.wkt + ")" + county_params
-        #     item['county_query'] = county_endpoint + str(latlng.lng) + "," + str(latlng.lat) +")" + county_params
+
         except:
             print("link creation error")
             pass
@@ -294,7 +292,6 @@ class AttributesPipeline(object):
         # for row in csv_file:
         #     print(row)
         try:
-            # import pdb; pdb.set_trace()
             building_code = units_lookup[units_lookup['BLDGClass'] == code]
             u_min = int(building_code['min_units'])
             u_max = int(building_code['max_units'])
@@ -341,7 +338,7 @@ class AttributesPipeline(object):
 class JsonWriterPipeline(object):
 
     def __init__(self):
-        self.file = open(generate_file_name('json'), 'wb')
+        self.file = open(generate_file_name('json','output'), 'wb')
         self.exporter = JsonItemExporter(
             self.file, encoding='utf-8', ensure_ascii=False)
         self.exporter.start_exporting()
@@ -358,7 +355,7 @@ class JsonWriterPipeline(object):
 class CsvWriterPipeline(object):
 
     def __init__(self):
-        self.file = open(generate_file_name('csv'), 'wb')
+        self.file = open(generate_file_name('csv', 'output'), 'wb')
         self.exporter = CsvItemExporter(self.file, encoding='utf-8')
         # self.exporter.fields_to_export = [
         #             'sale_date',
@@ -383,6 +380,32 @@ class CsvWriterPipeline(object):
         #             'geocoded_address',
         #             'geocode_url'
         #             ]
+        # import pdb; pdb.set_trace()
+        self.exporter.start_exporting()
+
+    def close_spider(self, spider):
+        self.exporter.finish_exporting()
+        self.file.close()
+
+    def process_item(self, item, spider):
+        self.exporter.export_item(item)
+        return item
+
+class PrinterWriterPipeline(object):
+    """
+    filtered csv file for easy reading
+    """
+
+    def __init__(self):
+        self.file = open(generate_file_name('csv', 'for_printer'), 'wb')
+        self.exporter = CsvItemExporter(self.file, encoding='utf-8')
+        self.exporter.fields_to_export = [
+                    'case_number',
+                    'geocoded_address',
+                    'zoning',
+                    'county_class',
+                    'estimated_units'
+                    ]
         # import pdb; pdb.set_trace()
         self.exporter.start_exporting()
 
