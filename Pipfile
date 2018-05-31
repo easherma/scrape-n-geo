@@ -13,5 +13,6 @@ geocoder = "*"
 xlrd = "*"
 openpyxl = "*"
 tox = "*"
+"pywin32" = "*"
 
 [dev-packages]

@@ -1,6 +1,6 @@
 import scrapy
 from datetime import datetime
-import time
+
 
 
 class FixtureSpider(scrapy.Spider):
