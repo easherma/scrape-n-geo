@@ -12,9 +12,6 @@ from datetime import datetime
 import re
 import geocoder
 import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
-import time
 
 
 def generate_file_name(file_format):
@@ -125,7 +122,7 @@ class GeocoderPipeline(object):
         self.key = None
         # api key, mapbox in this case. best practice would be to hide this
         if self.provider == 'mapbox':
-            self.key = 'pk.eyJ1IjoiZWFzaGVybWEiLCJhIjoiY2oxcW51Nzk2MDBkbTJxcGUxdm85bW5xayJ9.7mL0wQ7cjifWwt5DrXMuJA'  # API
+            self.key = 'pk.eyJ1IjoiZWFzaGVybWEiLCJhIjoiY2oxcW51Nzk2MDBkbTJxcGUxdm85bW5xayJ9.7mL0wQ7cjifWwt5DrXMuJA' #API
         if self.provider == 'google':
             self.key = 'AIzaSyBi7dtBuJ0sCzUEz8dhIRnOteUVeKWkCvE'
 
@@ -149,32 +146,32 @@ class GeocoderPipeline(object):
         return session
 
     def process_item(self, item, spider):
-        mb_geo = GeocoderPipeline('mapbox')
-        google_geo = GeocoderPipeline('google')
-
         try:
-            geocode_result = mb_geo.get_geocoder_query(
-                item['address_components'])
-            if geocode_result.quality <= 0.7:
-                print("inital quality too low: ",
-                      geocode_result.quality, "switching provider")
-                geocode_result = google_geo.get_geocoder_query(
-                    item['address_components'])
+            # #import pdb; pdb.set_trace()
+            print("geocoding  ", item)
+            with requests.Session() as session:
+                response = geocoder.mapbox(
+                    item['address_components'],
+                    bbox=[-87.940102, 41.643921, -87.523987, 42.023022], session=session, key=self.key)
+                #I'm not sure the above session is being persisted the way I would like
+                item['lng'] = response[0].lng
+                item['lat'] = response[0].lat
+
+                item['geocode_url'] = response.url
+                print("geocoded: ", item['geocode_url'])
+            return item
         except Exception as e:
-            print("quality error", e)
+            print(e)
+            #import pdb; pdb.set_trace()
             raise
-        finally:
-            item["geocode_result"] = geocode_result
-            item["geocoded_address"] = geocode_result.address
-            item['geocode_url'] = geocode_result.url
-            print("geocoded: ", item['geocode_url'])
 
     def get_geocoder_query(self, address=None, bbox=None, key=None, *args, **kwargs):
 
+
         params = {
-            'engine': self.engine,
-            'provider': self.provider,
-            'key': self.key
+        'engine': self.engine,
+        'provider': self.provider,
+        'key': self.key
 
         }
         query_params = {
@@ -188,9 +185,8 @@ class GeocoderPipeline(object):
                 t0 = time.time()
 
                 try:
-                    #                     response = mb_geo.get_geocoder_query(address_strings[428], session=session)
-                    geocode_result = getattr(geocoder, params['provider'])(
-                        query_params['address'], bbox=query_params['bbox'], key=self.key, session=session)
+#                     response = mb_geo.get_geocoder_query(address_strings[428], session=session)
+                    geocode_result = getattr(geocoder, params['provider'])(query_params['address'], bbox = query_params['bbox'], key = self.key, session=session)
                     return geocode_result
                 except Exception as x:
                     print('It failed :(', x.__class__.__name__)
@@ -204,13 +200,11 @@ class GeocoderPipeline(object):
 #             geocode_result = getattr(geocoder, params['provider'])(query_params['address'], bbox = query_params['bbox'], key = self.key)
         else:
             print("no key")
-            geocode_result = getattr(geocoder, params['provider'])(
-                query_params['address'], proximity=query_params['bbox'])
+            geocode_result = getattr(geocoder, params['provider'])(query_params['address'], proximity = query_params['bbox'])
 
         print(geocode_result.status)
         if geocode_result.status != 'OK':
-            print("Error geocoding {}: {}".format(
-                address, geocode_result.status))
+            print("Error geocoding {}: {}".format(address, geocode_result.status))
 #             geocode_result = "error"
             return geocode_result
 
