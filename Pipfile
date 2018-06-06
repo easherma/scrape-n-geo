@@ -14,5 +14,6 @@ xlrd = "*"
 openpyxl = "*"
 tox = "*"
 "pywin32" = "*"
+shub = "*"
 
 [dev-packages]

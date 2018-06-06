@@ -1,0 +1,15 @@
+setup.py
+project.egg-info/PKG-INFO
+project.egg-info/SOURCES.txt
+project.egg-info/dependency_links.txt
+project.egg-info/entry_points.txt
+project.egg-info/top_level.txt
+scrape_n_geo/1.py
+scrape_n_geo/__init__.py
+scrape_n_geo/items.py
+scrape_n_geo/middlewares.py
+scrape_n_geo/pipelines.py
+scrape_n_geo/settings.py
+scrape_n_geo/spiders/__init__.py
+scrape_n_geo/spiders/gen_fixture.py
+scrape_n_geo/spiders/jsc.py
