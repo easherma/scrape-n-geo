@@ -9,7 +9,7 @@ from scrapy.loader import ItemLoader
 class JscSpider(scrapy.Spider):
     name = 'jsc'
     allowed_domains = []
-    start_urls = ['http://www.tjsc.com/Sales/TodaySales']
+    start_urls = ['http://www.tjsc.com/Sales/CompletedSales']
 
     def parse(self, response):
         sales = response.xpath('//*[@id="basic-datatables"]/tbody//tr')

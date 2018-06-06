@@ -18,6 +18,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import time
 import logging
+import pword
 
 
 def generate_file_name(file_format, custom_name):
@@ -338,7 +339,7 @@ class AttributesPipeline(object):
 class JsonWriterPipeline(object):
 
     def __init__(self):
-        self.file = open(generate_file_name('json','output'), 'wb')
+        self.file = open(generate_file_name('json', 'output'), 'wb')
         self.exporter = JsonItemExporter(
             self.file, encoding='utf-8', ensure_ascii=False)
         self.exporter.start_exporting()
@@ -391,10 +392,35 @@ class CsvWriterPipeline(object):
         self.exporter.export_item(item)
         return item
 
+
 class PrinterWriterPipeline(object):
     """
     filtered csv file for easy reading
     """
+
+    def send_mail(self, message, title):
+        print("Sending mail...........")
+        import smtplib
+        from email.MIMEMultipart import MIMEMultipart
+        from email.MIMEText import MIMEText
+        gmailUser = 'ericandrewsherman@gmail.com'
+        gmailPassword = pword.pw
+        recipient = 'ericandrewsherman@gmail.com'
+
+        msg = MIMEMultipart()
+        msg['From'] = gmailUser
+        msg['To'] = recipient
+        msg['Subject'] = title
+        msg.attach(MIMEText(message))
+
+        mailServer = smtplib.SMTP('smtp.gmail.com', 587)
+        mailServer.ehlo()
+        mailServer.starttls()
+        mailServer.ehlo()
+        mailServer.login(gmailUser, gmailPassword)
+        mailServer.sendmail(gmailUser, recipient, msg.as_string())
+        mailServer.close()
+        print("Mail sent")
 
     def __init__(self):
         self.file = open(generate_file_name('csv', 'for_printer'), 'wb')
@@ -414,5 +440,11 @@ class PrinterWriterPipeline(object):
         self.file.close()
 
     def process_item(self, item, spider):
+        # try:
+        #     self.send_mail("some message", "Scraper Report")
+        # except Exception as e:
+        #     print(e)
+        #     pass
+
         self.exporter.export_item(item)
         return item

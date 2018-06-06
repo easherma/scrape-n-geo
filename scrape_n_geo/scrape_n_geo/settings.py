@@ -63,6 +63,22 @@ ROBOTSTXT_OBEY = True
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 #}
 
+EXTENSIONS = {
+    'scrape_n_geo.extensions.StatusMailer': 80
+}
+
+STATUSMAILER_RECIPIENTS = ['ericandrewsherman@gmail.com']
+STATUSMAILER_COMPRESSION = 'gzip'
+#STATUSMAILER_COMPRESSION = None
+
+MAIL_HOST = 'smtp.gmail.com'
+MAIL_PORT = 465
+MAIL_SSL = True
+MAIL_TLS = True
+import pword
+MAIL_USER = pword.user
+MAIL_PASS = pword.pw
+
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
