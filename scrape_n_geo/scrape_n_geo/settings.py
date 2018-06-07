@@ -10,14 +10,14 @@
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
 
-BOT_NAME = 'scrape_n_geo'
+BOT_NAME = "scrape_n_geo"
 
-SPIDER_MODULES = ['scrape_n_geo.spiders']
-NEWSPIDER_MODULE = 'scrape_n_geo.spiders'
+SPIDER_MODULES = ["scrape_n_geo.spiders"]
+NEWSPIDER_MODULE = "scrape_n_geo.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'scrape_n_geo (+http://www.yourdomain.com)'
+#USER_AGENT = "scrape_n_geo (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -41,45 +41,47 @@ ROBOTSTXT_OBEY = True
 
 # Override the default request headers:
 #DEFAULT_REQUEST_HEADERS = {
-#   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#   'Accept-Language': 'en',
+#   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+#   "Accept-Language": "en",
 #}
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'scrape_n_geo.middlewares.ScrapeNGeoSpiderMiddleware': 543,
+#    "scrape_n_geo.middlewares.ScrapeNGeoSpiderMiddleware": 543,
 #}
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    'scrape_n_geo.middlewares.MyCustomDownloaderMiddleware': 543,
+#    "scrape_n_geo.middlewares.MyCustomDownloaderMiddleware": 543,
 #}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
 EXTENSIONS = {
-   'scrapy.extensions.closespider.CloseSpider': 200,
+   "scrapy.extensions.closespider.CloseSpider": 200,
 }
 
 CLOSESPIDER_ITEMCOUNT = 3
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'scrape_n_geo.pipelines.FilterPipeline': 200,
-   'scrape_n_geo.pipelines.cleanPipeline': 300,
-   'scrape_n_geo.pipelines.DefaultValuesPipeline': 320,
-   'scrape_n_geo.pipelines.AddressPipeline': 350,
-   'scrape_n_geo.pipelines.GeocoderPipeline': 400,
-   'scrape_n_geo.pipelines.AttributesPipeline': 450,
-   'scrape_n_geo.pipelines.CsvWriterPipeline': 500,
-   'scrape_n_geo.pipelines.PrinterWriterPipeline': 500,
-   'scrape_n_geo.pipelines.JsonWriterPipeline': 500
+   "scrape_n_geo.pipelines.FilterPipeline": 200,
+   "scrape_n_geo.pipelines.cleanPipeline": 300,
+   "scrape_n_geo.pipelines.DefaultValuesPipeline": 320,
+   "scrape_n_geo.pipelines.AddressPipeline": 350,
+   "scrape_n_geo.pipelines.GeocoderPipeline": 400,
+   "scrape_n_geo.pipelines.AttributesPipeline": 450,
+   # "scrape_n_geo.pipelines.CsvWriterPipeline": 500,
+   # "scrape_n_geo.pipelines.PrinterWriterPipeline": 500,
+   # "scrape_n_geo.pipelines.JsonWriterPipeline": 500
 }
 
-LOG_LEVEL = 'ERROR'
+LOG_LEVEL = "ERROR"
 
+# FEED_URI = "stdout:"
+# FEED_FORMAT= "csv"
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
@@ -97,6 +99,6 @@ LOG_LEVEL = 'ERROR'
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
 HTTPCACHE_ENABLED = True
 HTTPCACHE_EXPIRATION_SECS = 0
-HTTPCACHE_DIR = 'httpcache'
+HTTPCACHE_DIR = "httpcache"
 #HTTPCACHE_IGNORE_HTTP_CODES = []
-HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
