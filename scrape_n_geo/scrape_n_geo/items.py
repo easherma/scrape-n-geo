@@ -14,9 +14,6 @@ import json
 
 
 
-
-
-
 class CompletedSalesItem(scrapy.Item):
 
     sale_date = scrapy.Field()

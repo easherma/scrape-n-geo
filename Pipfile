@@ -15,5 +15,8 @@ openpyxl = "*"
 tox = "*"
 "pywin32" = "*"
 shub = "*"
+spiderkeeper = "*"
+scrapyd-client = "*"
+scrapyd = "*"
 
 [dev-packages]

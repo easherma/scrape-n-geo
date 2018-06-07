@@ -64,11 +64,6 @@ class FilterPipeline(object):
             if item['city'] == "CHICAGO" and item['sale_amount'] != "$0.00" and item['continuance'] == "":
                 return item
             else:
-                # print("city: ", item['city'], item['city'] == "CHICAGO")
-                # print("sale amount: ",
-                #       item['sale_amount'], item['sale_amount'] != "$0.00")
-                # print("continuance", item['continuance'],
-                #       item['continuance'] == "")
                 raise DropItem(
                     "Filtering element since it dosen't match criteria")
         else:
@@ -90,16 +85,13 @@ class cleanPipeline(object):
     def truncate_values(item, length):
         return dict((k, v[:length]) for k, v in item.items())
 
-    # def truncate_values(item, length):
-    #     return (k, v[:length])
-
     def process_item(self, item, spider):
         try:
             if item:
                 # truncate long address strings(should clean)
-                print(len(item['address']))
                 if len(item['address']) > 80:
                     item['address'] = item['address'][:80]
+                item['address'] = replace_chars(item['address'])
                 item['sale_amount'] = strip_non_digits(item['sale_amount'])
                 item['opening_bid'] = strip_non_digits(item['opening_bid'])
                 item['sale_date'] = datetime_parse(
@@ -108,7 +100,7 @@ class cleanPipeline(object):
             else:
                 pass
         except Exception as e:
-            print("EXCEPTION:", e)
+            logging.error("EXCEPTION:", e)
             pass
 
 
@@ -199,9 +191,9 @@ class GeocoderPipeline(object):
             geocode_result = getattr(geocoder, params['provider'])(
                 query_params['address'], proximity=query_params['bbox'])
 
-        print(geocode_result.status)
+        # print(geocode_result.status)
         if geocode_result.status != 'OK':
-            print("Error geocoding {}: {}".format(
+            logging.error("Error geocoding {}: {}".format(
                 address, geocode_result.status))
 #             geocode_result = "error"
             return geocode_result
@@ -213,19 +205,27 @@ class GeocoderPipeline(object):
         try:
             geocode_result = self.get_geocoder_query(
                 item['address_components'], provider='mapbox')
-            if geocode_result.quality <= 0.7:
-                print("inital quality too low: ",
+            if geocode_result:
+                if geocode_result.quality <= 0.7:
+                    logging.info("inital quality too low: ",
+                          geocode_result.quality, "switching provider")
+                    geocode_result = self.get_geocoder_query(
+                        item['address_components'],  provider='google')
+            else:
+                logging.info("no inital result: ",
                       geocode_result.quality, "switching provider")
                 geocode_result = self.get_geocoder_query(
                     item['address_components'],  provider='google')
+
             item["geocode_result"] = geocode_result
             item["geocoded_latlng"] = geocode_result.latlng
             item["geocoded_address"] = geocode_result.address
             item['geocode_url'] = geocode_result.url
-            print("geocoded: ", item['geocode_url'])
+
+            logging.info("geocoded: ", item['geocode_url'], "quality: ",  geocode_result.quality)
             return item
         except Exception as e:
-            print("quality error", e)
+            logging.error("quality error", e)
             raise
 
 
@@ -244,7 +244,7 @@ class AttributesPipeline(object):
                 str(latlng.lng) + "," + str(latlng.lat) + ")" + county_params
 
         except:
-            print("link creation error")
+            logging.error("link creation error")
             pass
         finally:
             return zoning_query, county_query
@@ -263,7 +263,7 @@ class AttributesPipeline(object):
             TotalValue = result['features'][0]['attributes']['TotalValue']
             attributes = result['features'][0]['attributes']
         except Exception as e:
-            print(e)
+            logging.error(e)
             attributes = None
             pass
 
@@ -277,7 +277,7 @@ class AttributesPipeline(object):
             json = r.json()
             zone_class = json['features'][0]['properties']['zone_class']
         except Exception as e:
-            print(e)
+            logging.error(e)
             zone_class = None
             pass
 
@@ -309,7 +309,7 @@ class AttributesPipeline(object):
             else:
                 return u_min
         except Exception as e:
-            print("no code", e)
+            logging.error("no code", e)
             return 0
 
     def process_item(self, item, spider):

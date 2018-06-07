@@ -4,12 +4,13 @@ import datetime
 
 from scrape_n_geo.items import CompletedSalesItem
 from scrapy.loader import ItemLoader
+import urls_to_scrape
 
 
 class JscSpider(scrapy.Spider):
     name = 'jsc'
     allowed_domains = []
-    start_urls = ['http://www.tjsc.com/Sales/TodaySales']
+    start_urls = [urls_to_scrape.complete]
 
     def parse(self, response):
         sales = response.xpath('//*[@id="basic-datatables"]/tbody//tr')
@@ -35,24 +36,3 @@ class JscSpider(scrapy.Spider):
             item['sold_to'] = sale.xpath( 'td[14]/text()').extract_first().strip()
             item['last_updated'] = datetime.datetime.now()
             yield item
-
-
-
-
-# table_rows = response.xpath('//*[@id="basic-datatables"]/tbody//tr')
-# data = {}
-# for table_row in table_rows:
-#     data[table_row.xpath('td[/text()').extract_first().strip()] = table_row.xpath('td[@class="col2 strong"]/text()').extract_first().strip()
-# yield data
-
-# def parse(self, response):
-#     products = response.xpath('//*[@id="Year1"]/table//tr')
-#     # ignore the table header row
-#     for product in products[1:]:
-#         item = Schooldates1Item()
-#         item['hol'] = product.xpath('td[1]//text()').extract_first()
-#         item['first'] = product.xpath('td[2]//text()').extract_first()
-#         item['last'] = ''.join(product.xpath(
-#             'td[3]//text()').extract()).strip()
-#         item['url'] = response.url
-#         yield item
