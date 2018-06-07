@@ -63,7 +63,7 @@ EXTENSIONS = {
    "scrapy.extensions.closespider.CloseSpider": 200,
 }
 
-CLOSESPIDER_ITEMCOUNT = 3
+CLOSESPIDER_ITEMCOUNT = 0
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {

@@ -1,0 +1,1 @@
+c:\users\erica\.virtualenvs\scrape-n-geo-fegj-r4t\lib\site-packages\scrape_n_geo-1.0-py3.6.egg

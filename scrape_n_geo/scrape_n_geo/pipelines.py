@@ -18,6 +18,8 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import time
 import logging
+import os
+import pathlib
 
 
 def generate_file_name(file_format, custom_name):
@@ -217,6 +219,7 @@ class GeocoderPipeline(object):
                 geocode_result = self.get_geocoder_query(
                     item['address_components'],  provider='google')
             item["geocode_result"] = geocode_result
+            item["geocoded_latlng"] = geocode_result.latlng
             item["geocoded_address"] = geocode_result.address
             item['geocode_url'] = geocode_result.url
             print("geocoded: ", item['geocode_url'])
@@ -236,7 +239,6 @@ class AttributesPipeline(object):
         zoning_query = ""
         county_query = ""
         try:
-            # import pdb; pdb.set_trace()
             zoning_query = zoning_endpoint + latlng.wkt + "')"
             county_query = county_endpoint + \
                 str(latlng.lng) + "," + str(latlng.lat) + ")" + county_params
@@ -287,10 +289,17 @@ class AttributesPipeline(object):
             code = int(code)
         except:
             pass
-        units_lookup = pd.read_csv('./lookup.csv')
-        # csv_file = csv.DictReader(open('./lookup.csv', 'r'), delimiter=',')
-        # for row in csv_file:
-        #     print(row)
+
+        #
+        # import pdb; pdb.set_trace()
+
+        lookup_dict = {'BLDGClass': {0: 200, 1: 202, 2: 203, 3: 204, 4: 205, 5: 206, 6: 207, 7: 208, 8: 209, 9: 210, 10: 211, 11: 212, 12: 234, 13: 278, 14: 299, 15: 313, 16: 314, 17: 315, 18: 318, 19: 391, 20: 396, 21: 399, 22: 913, 23: 914, 24: 915, 25: 918, 26: 959, 27: 991, 28: 996, 29: 997}, 'min_units': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 2, 11: 1, 12: 1, 13: 1, 14: 1, 15: 7, 16: 1, 17: 1, 18: 7, 19: 7, 20: 7, 21: 1, 22: 7, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 7, 29: 1}, 'max_units': {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 6, 11: 6, 12: 0, 13: 0, 14: 0, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 21: 0, 22: 0, 23: 0, 24: 0, 25: 0, 26: 0, 27: 0, 28: 0, 29: 0}}
+
+        # with open('scrape_n_geo/lookup.py', 'r') as f:
+        #     s = f.read()
+        #     units_lookup = pd.DataFrame.from_dict(eval(s))
+        units_lookup = pd.DataFrame.from_dict(lookup_dict)
+
         try:
             building_code = units_lookup[units_lookup['BLDGClass'] == code]
             u_min = int(building_code['min_units'])
@@ -338,7 +347,7 @@ class AttributesPipeline(object):
 class JsonWriterPipeline(object):
 
     def __init__(self):
-        self.file = open(generate_file_name('json','output'), 'wb')
+        self.file = open(generate_file_name('json', 'output'), 'wb')
         self.exporter = JsonItemExporter(
             self.file, encoding='utf-8', ensure_ascii=False)
         self.exporter.start_exporting()
@@ -380,7 +389,7 @@ class CsvWriterPipeline(object):
         #             'geocoded_address',
         #             'geocode_url'
         #             ]
-        # import pdb; pdb.set_trace()
+
         self.exporter.start_exporting()
 
     def close_spider(self, spider):
@@ -390,6 +399,7 @@ class CsvWriterPipeline(object):
     def process_item(self, item, spider):
         self.exporter.export_item(item)
         return item
+
 
 class PrinterWriterPipeline(object):
     """

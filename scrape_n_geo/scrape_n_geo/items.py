@@ -28,6 +28,7 @@ class CompletedSalesItem(scrapy.Item):
     address_components = scrapy.Field()
     geocode_result = scrapy.Field()
     geocoded_address = scrapy.Field()
+    geocoded_latlng = scrapy.Field()
     # lat = scrapy.Field()
     # lng = scrapy.Field()
     geocode_url = scrapy.Field()
