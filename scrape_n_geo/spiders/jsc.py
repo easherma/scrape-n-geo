@@ -4,13 +4,17 @@ import datetime
 
 from scrape_n_geo.items import CompletedSalesItem
 from scrapy.loader import ItemLoader
-import urls_to_scrape
+
+
+
+
+
 
 
 class JscSpider(scrapy.Spider):
     name = 'jsc'
     allowed_domains = []
-    start_urls = [urls_to_scrape.complete]
+    start_urls = ['http://www.tjsc.com/Sales/CompletedSales']
 
     def parse(self, response):
         sales = response.xpath('//*[@id="basic-datatables"]/tbody//tr')
