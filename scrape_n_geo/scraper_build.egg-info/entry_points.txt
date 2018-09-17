@@ -1,3 +1,0 @@
-[scrapy]
-settings = scrape_n_geo.settings
-
