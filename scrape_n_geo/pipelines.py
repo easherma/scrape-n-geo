@@ -44,6 +44,12 @@ def strip_non_digits(column):
     return cast
 
 
+def replace_chars(text):
+    bad_chars= ['.', '#', '/', ';']
+    clean = re.sub('[|.|#|/|;]', '', text)
+    return clean
+
+
 class DefaultValuesPipeline(object):
 
     def process_item(self, item, spider):
@@ -73,14 +79,6 @@ class FilterPipeline(object):
 class cleanPipeline(object):
     city = "CHICAGO"
     sale_threshold = "$0.00"
-
-    def replace_chars(text):
-        """
-        replace 'bad' chars that throw off geocoding
-        """
-        for ch in ['\.', '\#', '\/', '\;']:
-            if ch in text:
-                text = text.replace(ch, '' + ch)
 
     def truncate_values(item, length):
         return dict((k, v[:length]) for k, v in item.items())
