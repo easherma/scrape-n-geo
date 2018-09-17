@@ -1,0 +1,17 @@
+setup.py
+scrape_n_geo/1.py
+scrape_n_geo/__init__.py
+scrape_n_geo/items.py
+scrape_n_geo/lookup.py
+scrape_n_geo/middlewares.py
+scrape_n_geo/pipelines.py
+scrape_n_geo/settings.py
+scrape_n_geo/spiders/__init__.py
+scrape_n_geo/spiders/gen_fixture.py
+scrape_n_geo/spiders/jsc.py
+scraper_build.egg-info/PKG-INFO
+scraper_build.egg-info/SOURCES.txt
+scraper_build.egg-info/dependency_links.txt
+scraper_build.egg-info/entry_points.txt
+scraper_build.egg-info/not-zip-safe
+scraper_build.egg-info/top_level.txt
