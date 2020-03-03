@@ -45,7 +45,7 @@ def strip_non_digits(column):
 
 
 def replace_chars(text):
-    bad_chars= ['.', '#', '/', ';']
+    bad_chars = ['.', '#', '/', ';']
     clean = re.sub('[|.|#|/|;]', '', text)
     return clean
 
@@ -206,12 +206,12 @@ class GeocoderPipeline(object):
             if geocode_result:
                 if geocode_result.quality <= 0.7:
                     logging.info("inital quality too low: ",
-                          geocode_result.quality, "switching provider")
+                                 geocode_result.quality, "switching provider")
                     geocode_result = self.get_geocoder_query(
                         item['address_components'],  provider='google')
             else:
                 logging.info("no inital result: ",
-                      geocode_result.quality, "switching provider")
+                             geocode_result.quality, "switching provider")
                 geocode_result = self.get_geocoder_query(
                     item['address_components'],  provider='google')
 
@@ -220,7 +220,8 @@ class GeocoderPipeline(object):
             item["geocoded_address"] = geocode_result.address
             item['geocode_url'] = geocode_result.url
 
-            logging.info("geocoded: ", item['geocode_url'], "quality: ",  geocode_result.quality)
+            logging.info(
+                "geocoded: ", item['geocode_url'], "quality: ",  geocode_result.quality)
             return item
         except Exception as e:
             logging.error("quality error", e)
@@ -229,10 +230,10 @@ class GeocoderPipeline(object):
 
 class AttributesPipeline(object):
 
-    #make api links
+    # make api links
     def create_api_links(self, latlng):
         zoning_endpoint = "https://data.cityofchicago.org/resource/dj47-wfun.geojson?$where=intersects(the_geom,'"
-        county_endpoint = "https://gis1.cookcountyil.gov/arcgis/rest/services/cookVwrDynmc/MapServer/44/query?where=&text=&objectIds=&time=&geometry=POINT("
+        county_endpoint = "https://gis12.cookcountyil.gov/arcgis/rest/services/cookVwrDynmc/MapServer/44/query?where=&text=&objectIds=&time=&geometry=POINT("
         county_params = "&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=BLDGClass,Pin14,TotalValue&returnGeometry=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&f=pjson"
         zoning_query = ""
         county_query = ""
@@ -247,7 +248,7 @@ class AttributesPipeline(object):
         finally:
             return zoning_query, county_query
 
-    #get county
+    # get county
     def get_county(self, url):
         BLDGClass = None
         PIN14 = None
@@ -291,7 +292,8 @@ class AttributesPipeline(object):
         #
         # import pdb; pdb.set_trace()
 
-        lookup_dict = {'BLDGClass': {0: 200, 1: 202, 2: 203, 3: 204, 4: 205, 5: 206, 6: 207, 7: 208, 8: 209, 9: 210, 10: 211, 11: 212, 12: 234, 13: 278, 14: 299, 15: 313, 16: 314, 17: 315, 18: 318, 19: 391, 20: 396, 21: 399, 22: 913, 23: 914, 24: 915, 25: 918, 26: 959, 27: 991, 28: 996, 29: 997}, 'min_units': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 2, 11: 1, 12: 1, 13: 1, 14: 1, 15: 7, 16: 1, 17: 1, 18: 7, 19: 7, 20: 7, 21: 1, 22: 7, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 7, 29: 1}, 'max_units': {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 6, 11: 6, 12: 0, 13: 0, 14: 0, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 21: 0, 22: 0, 23: 0, 24: 0, 25: 0, 26: 0, 27: 0, 28: 0, 29: 0}}
+        lookup_dict = {'BLDGClass': {0: 200, 1: 202, 2: 203, 3: 204, 4: 205, 5: 206, 6: 207, 7: 208, 8: 209, 9: 210, 10: 211, 11: 212, 12: 234, 13: 278, 14: 299, 15: 313, 16: 314, 17: 315, 18: 318, 19: 391, 20: 396, 21: 399, 22: 913, 23: 914, 24: 915, 25: 918, 26: 959, 27: 991, 28: 996, 29: 997}, 'min_units': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1,
+                                                                                                                                                                                                                                                                                                                        9: 1, 10: 2, 11: 1, 12: 1, 13: 1, 14: 1, 15: 7, 16: 1, 17: 1, 18: 7, 19: 7, 20: 7, 21: 1, 22: 7, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 7, 29: 1}, 'max_units': {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 6, 11: 6, 12: 0, 13: 0, 14: 0, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 21: 0, 22: 0, 23: 0, 24: 0, 25: 0, 26: 0, 27: 0, 28: 0, 29: 0}}
 
         # with open('scrape_n_geo/lookup.py', 'r') as f:
         #     s = f.read()
@@ -408,12 +410,12 @@ class PrinterWriterPipeline(object):
         self.file = open(generate_file_name('csv', 'for_printer'), 'wb')
         self.exporter = CsvItemExporter(self.file, encoding='utf-8')
         self.exporter.fields_to_export = [
-                    'case_number',
-                    'geocoded_address',
-                    'zoning',
-                    'county_class',
-                    'estimated_units'
-                    ]
+            'case_number',
+            'geocoded_address',
+            'zoning',
+            'county_class',
+            'estimated_units'
+        ]
         # import pdb; pdb.set_trace()
         self.exporter.start_exporting()
 
