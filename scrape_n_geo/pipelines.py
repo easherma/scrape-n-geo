@@ -312,9 +312,9 @@ class AttributesPipeline(object):
             except Exception as e:
                 logging.error("no code", e)
                 traceback.print_exc()
-                return 1
+                return 0
         else:
-            return 1
+            return 0
 
     def process_item(self, item, spider):
         # import pdb; pdb.set_trace()
@@ -377,29 +377,6 @@ class CsvWriterPipeline(object):
     def __init__(self):
         self.file = open(generate_file_name('csv', 'output'), 'wb')
         self.exporter = CsvItemExporter(self.file, encoding='utf-8')
-        # self.exporter.fields_to_export = [
-        #             'sale_date',
-        #             'sale_time',
-        #             'file_number',
-        #             'case_number',
-        #             'opening_bid',
-        #             'required_down',
-        #             'sale_amount',
-        #             'continuance',
-        #             'sold_to',
-        #             'firm_name',
-        #             'address',
-        #             'city',
-        #             'county',
-        #             'zip_code',
-        #             'address_components',
-        #             # 'lat',
-        #             # 'lng',
-        #             'last_updated',
-        #             'geocode_result',
-        #             'geocoded_address',
-        #             'geocode_url'
-        #             ]
 
         self.exporter.start_exporting()
 
