@@ -74,7 +74,7 @@ ITEM_PIPELINES = {
    "scrape_n_geo.pipelines.GeocoderPipeline": 400,
    "scrape_n_geo.pipelines.AttributesPipeline": 450,
    # "scrape_n_geo.pipelines.CsvWriterPipeline": 500,
-   # "scrape_n_geo.pipelines.PrinterWriterPipeline": 500,
+   "scrape_n_geo.pipelines.PrinterWriterPipeline": 500,
    # "scrape_n_geo.pipelines.JsonWriterPipeline": 500
 }
 

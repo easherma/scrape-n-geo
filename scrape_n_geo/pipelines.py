@@ -20,6 +20,7 @@ import time
 import logging
 import os
 import pathlib
+import traceback
 
 
 def generate_file_name(file_format, custom_name):
@@ -299,18 +300,21 @@ class AttributesPipeline(object):
         #     s = f.read()
         #     units_lookup = pd.DataFrame.from_dict(eval(s))
         units_lookup = pd.DataFrame.from_dict(lookup_dict)
-
-        try:
-            building_code = units_lookup[units_lookup['BLDGClass'] == code]
-            u_min = int(building_code['min_units'])
-            u_max = int(building_code['max_units'])
-            if (u_min < u_max):
-                return u_max
-            else:
-                return u_min
-        except Exception as e:
-            logging.error("no code", e)
-            return 0
+        if code in units_lookup['BLDGClass'].tolist():
+            try:
+                building_code = units_lookup[units_lookup['BLDGClass'] == code]
+                u_min = int(building_code['min_units'])
+                u_max = int(building_code['max_units'])
+                if (u_min < u_max):
+                    return u_max
+                else:
+                    return u_min
+            except Exception as e:
+                logging.error("no code", e)
+                traceback.print_exc()
+                return 1
+        else:
+            return 1
 
     def process_item(self, item, spider):
         # import pdb; pdb.set_trace()
@@ -334,13 +338,20 @@ class AttributesPipeline(object):
             if county_values:
                 item["county_attributes"] = county_values[0]
                 item["county_class"] = county_values[1]
-                item['estimated_units'] = self.estimate_units(county_values[1])
+                item['estimated_units'] = str(
+                    self.estimate_units(county_values[1]))
 
             item['zoning_query'] = api_links[0]
             item['county_query'] = api_links[1]
             item["geocode_result"] = item["geocode_result"].json
+            import pdb; pdb.set_trace()
+            item["street_address_1"] = f"{item['geocode_result']['housenumber'] if 'housenumber' in item['geocode_result'].keys() else ''} {item['geocode_result']['raw']['text']}"
+            item["city"] = item['geocode_result']['city']
+            item["state"] = item['geocode_result']['raw']['region']
+
             return item
         else:
+
             raise
 
 
@@ -407,14 +418,18 @@ class PrinterWriterPipeline(object):
     """
 
     def __init__(self):
-        self.file = open(generate_file_name('csv', 'for_printer'), 'wb')
+        self.file = open(generate_file_name('csv', 'for_printer'), 'wb+')
         self.exporter = CsvItemExporter(self.file, encoding='utf-8')
         self.exporter.fields_to_export = [
+            'street_address_1',
+            'city',
+            'state',
+            'zip_code',
             'case_number',
-            'geocoded_address',
             'zoning',
             'county_class',
-            'estimated_units'
+            'estimated_units',
+            'address'
         ]
         # import pdb; pdb.set_trace()
         self.exporter.start_exporting()

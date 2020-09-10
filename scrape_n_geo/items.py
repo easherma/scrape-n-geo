@@ -43,4 +43,6 @@ class CompletedSalesItem(scrapy.Item):
     estimated_units = scrapy.Field()
     zoning_query = scrapy.Field()
     county_query = scrapy.Field()
+    street_address_1 = scrapy.Field()
+    state = scrapy.Field()
     last_updated = scrapy.Field(serializer=str)
