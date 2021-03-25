@@ -60,7 +60,7 @@ pygments==2.2.0
 pyopenssl==18.0.0
 python-dateutil==2.7.3
 pytz==2018.4
-pyyaml==3.12
+pyyaml==5.4
 pyzmq==17.0.0
 qtconsole==4.3.1
 queuelib==1.5.0
