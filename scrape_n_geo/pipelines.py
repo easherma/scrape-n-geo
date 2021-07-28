@@ -344,7 +344,7 @@ class AttributesPipeline(object):
             item['zoning_query'] = api_links[0]
             item['county_query'] = api_links[1]
             item["geocode_result"] = item["geocode_result"].json
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             item["street_address_1"] = f"{item['geocode_result']['housenumber'] if 'housenumber' in item['geocode_result'].keys() else ''} {item['geocode_result']['raw']['text']}"
             item["city"] = item['geocode_result']['city']
             item["state"] = item['geocode_result']['raw']['region']
